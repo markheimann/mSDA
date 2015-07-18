@@ -1,2 +1,10 @@
 # mSDA
-Implementation and usage of marginalized stacked denoising autoencoders (mSDA)
+Implementation and usage of marginalized stacked denoising autoencoders (mSDA), based on the "Marginalized Stacked Denoising Autoencoders for Domain Adaption" paper by Chen et. al (2012).  MATLAB code is provided in the paper, and both MATLAB and Python implementations (the latter is a strict translation of the MATLAB code written line for line in the paper) are provided at http://www.cs.cornell.edu/~kilian/code/code.html.  
+
+This implementation of mSDA is based on both the sample code the authors provided as well as the equations in the paper.  This Python implementation ends up being slightly more optimized than the one they provided, and it contains hopefully more explanatory variable names and comments.  Additionally, while in the paper the authors provided literal MATLAB implementations of the main mSDA algorithm, they also described but did not give an implementation of a faster approximation for high dimensional data.  This project also contains an implementation of this approximation.  All this is done in msda.py.  
+
+Finally, to demonstrate the capabilities of mSDA, this project contains a simple sample application: document classification from a few categories the well-known 20 newsgroups dataset.  Data preprocessing--converting the raw data to a bag of words--is done from scratch in process_data.py, and a common list of stop words is included in stop_words.txt.  process_data.py also contains methods to split the data into training and test sets and select the most common features (as the authors allude to doing). 
+
+The actual applications, which loads in the data, classifies it with a linear SVM on bag-of-words as a baseline, and learns a "deep" representation with mSDA on which to train another linear SVM, is contained in text_analysis.py.  To run this program, run the command: python text_analysis.py. mSDA tends to run fairly quickly (though this is a very small problem) and produces features that lend themselves to slightly better classification accuracy than the raw bag-of-words representation.  This simple problem, however, is mainly a proof of concept--further work could explore more heavy-duty applications of mSDA (in particular, ones involving domain adaptation, which is what mSDA is intended for).  
+
+  
