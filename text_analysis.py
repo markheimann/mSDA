@@ -8,8 +8,7 @@ import numpy as np
 import time
 
 #TODO: fix up preprocessing data code and upload it as a separate file to WMD as well
-#TODO: possibly use training mappings to transform test mSDA instead of performing mSDA again on test data
-#		see about tanh in low dimensional approximation
+#TODO: debug low dimensional approximation
 #TODO: run more extensive tests on performance of mSDA with and without low dimensional approximation
 
 #fetch training documents from 20 newsgroups dataset in random order
@@ -18,15 +17,12 @@ all_20news = fetch_20newsgroups(subset='all',categories=categories, shuffle=True
 all_raw_data = all_20news.data #all the data
 all_data_stringsList = process_data.createWordLists(process_data.unicodeToString(all_raw_data))
 all_data_words = process_data.preprocess_by_word(all_data_stringsList)
-all_raw_labels = all_20news.target #all the labels
+all_labels = all_20news.target #all the labels
 all_full_data = process_data.vectorize(all_data_words) #convert to bag of words
 all_full_data = all_full_data.transpose() #so rows are data, columns are features (format we predominantly use)
-all_labels = all_raw_labels #already vectorized  #vectorize(all_raw_labels.tolist()) #convert to numeric labels
 num_mostCommon = 800
 all_mostCommonFeatures_data = process_data.getMostCommonFeatures(all_full_data, num_mostCommon)
 train_data, train_labels, test_data, test_labels = process_data.splitTrainTest(all_mostCommonFeatures_data, all_labels)
-#train_data = train_data.transpose() #for Chip's implementation of msda #TODO: debug
-#test_data = test_data.transpose()
 
 print "Shape of training data: ", train_data.shape
 print "Shape of test data: ", test_data.shape
@@ -46,12 +42,21 @@ subproblem_size = 400
 
 #need to transpose data to be in the right format (#features x #data) for mSDA
 #specifically, the deep representation is the output from the last layer
-#train_deepRep = msda.mSDA_lowDimApprox(train_data, prob_corruption, num_layers, subproblem_size)[1][:,:,-1]
-#test_deepRep = msda.mSDA_lowDimApprox(test_data, prob_corruption, num_layers, subproblem_size)[1][:,:,-1]
-train_deepRep = msda.mSDA(train_data, prob_corruption, num_layers)[1][:,:,-1]
-#TODO: maybe should use same weights as on training features to transform test data?
-test_deepRep = msda.mSDA(test_data, prob_corruption, num_layers)[1][:,:,-1]
-#test_deepRep = np.tanh(np.dot(train_mapping, test_data))
+#with low dimensional approximation described in paper
+'''
+subproblem_mappings, subseq_mappings, representations  = msda.mSDA_lowDimApprox(train_data, prob_corruption, 
+			num_layers, subproblem_size)
+train_deepRep = representations[:,:,-1]
+#use same weights as on training features to transform test data
+test_deepRep = msda.mSDA_lowDimApprox(test_data, prob_corruption, num_layers, subproblem_size, 
+			subproblem_mappings, subseq_mappings)[2][:,:,-1]
+'''
+#without low dimensional approximation
+train_mappings, train_reps = msda.mSDA(train_data, prob_corruption, num_layers)
+train_deepRep = train_reps[:,:,-1]
+#use same weights as on training features to transform test data
+test_deepRep = msda.mSDA(test_data, prob_corruption, num_layers, train_mappings)[1][:,:,-1]
+#'''
 
 #sklearn requires (#data x #features) so transpose back
 train_deepRep = train_deepRep.transpose()
