@@ -5,9 +5,6 @@ from sklearn.base import BaseEstimator
 from sklearn import linear_model, cross_validation, grid_search
 
 import sys, random
-MSDA_PATH = "/Users/mheimann/Desktop/Projects/Algorithms/mSDA"
-sys.path.insert(0,MSDA_PATH)
-import data.read_data as read
 import msda
 
 class MD(BaseEstimator):
